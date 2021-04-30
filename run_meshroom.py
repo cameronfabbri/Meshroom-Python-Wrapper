@@ -18,34 +18,6 @@ import scripts.clean_mesh as clean_mesh
 opj = os.path.join
 
 
-def crop_images(image_paths):
-
-    for image_path in image_paths:
-        img = cv2.imread(image_path)
-        edges = cv2.Canny(img, 10, 300)
-
-        for i, row in enumerate(edges):
-            if np.sum(row) > 0:
-                start_y = i
-                break
-        for i, col in enumerate(edges.T):
-            if np.sum(col) > 0:
-                start_x = i
-                break
-        for i, row in enumerate(np.flipud(edges)):
-            if np.sum(row) > 0:
-                end_y = i
-                break
-        for i, col in enumerate(np.flipud(edges.T)):
-            if np.sum(col) > 0:
-                end_x = i
-                break
-
-        new_path = image_path.replace('images', 'cropped_images')
-        cv2.imwrite(
-            new_path, img[start_y-10:-(end_y-10), start_x-10:-(end_x-10), :])
-
-
 class Meshroom:
     def __init__(
             self,
@@ -65,7 +37,6 @@ class Meshroom:
             'aliceVision', 'vlfeat_K80L3.SIFT.tree')
 
         self.image_dir = opj(project_dir, 'images')
-        self.crop_dir = opj(project_dir, 'cropped_images')
         self.cache_dir = opj(project_dir, 'MeshroomCache')
         self.camera_dir = opj(self.cache_dir, 'CameraInit', self.uuid)
         self.feature_extraction_dir = opj(
@@ -97,7 +68,6 @@ class Meshroom:
         self.dense_point_cloud_file = opj(
             self.meshing_dir, 'densePointCloud.abc')
 
-        #os.makedirs(self.crop_dir, exist_ok=True)
         os.makedirs(self.cache_dir, exist_ok=True)
         os.makedirs(self.sfm_dir, exist_ok=True)
         os.makedirs(self.camera_dir, exist_ok=True)
@@ -119,10 +89,6 @@ class Meshroom:
             self.sensor_db = sensor_db
 
         self.bin = opj(meshroom_dir, 'aliceVision', 'bin')
-
-        #image_paths = [
-        #    opj(self.image_dir, x) for x in os.listdir(self.image_dir)]
-        #crop_images(image_paths)
 
     def camera_init(
             self,
